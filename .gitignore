@@ -1,0 +1,132 @@
+# ===============================
+# Solution Artifacts (.NET / VS)
+# ===============================
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.ncb
+*.opendb
+*.sdf
+*.cache
+*.bak
+*.sln.iml
+
+# ===============================
+# Build Output
+# ===============================
+bin/
+obj/
+Build/
+build/
+[Bb]uild/
+[Ll]og/
+*.dll
+*.exe
+*.app
+*.pdb
+
+# ===============================
+# Publishing
+# ===============================
+*.Publish.xml
+*.pubxml
+*.publishproj
+publish/
+
+# ===============================
+# NuGet
+# ===============================
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+*.nuspec
+project.lock.json
+project.fragment.lock.json
+
+# ===============================
+# Configuration & Secrets
+# ===============================
+appsettings.*.json
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+**/secrets.json
+.env
+*.env.local
+
+# ===============================
+# EF Core & Scaffolding
+# ===============================
+Migrations/
+ScaffoldingReadMe.txt
+
+# ===============================
+# Logs & Temp
+# ===============================
+*.log
+*.tlog
+*.svclog
+*.pidb
+*.tmp
+*.cache
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+*.vsmdi
+*.vsp
+*.vspx
+
+# ===============================
+# IDE Settings
+# ===============================
+.vscode/
+.history/
+.idea/
+*.DotSettings.user
+
+# ===============================
+# ReSharper / JetBrains
+# ===============================
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# ===============================
+# OS Generated
+# ===============================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ===============================
+# IIS / SQL / Certs
+# ===============================
+*.mdf
+*.ldf
+*.dbmdl
+*.pfx
+*.key
+*.cer
+
+# ===============================
+# Frontend / Web Assets
+# ===============================
+node_modules/
+dist/
+*.gz
+DreamDay.UI/wwwroot/lib/
+DreamDay.UI/wwwroot/dist/
+**/DreamDay.UI/node_modules/
+
+# ===============================
+# Miscellaneous
+# ===============================
+*.vspscc
+*.vssscc
+.project
+.dotnet-tools.json

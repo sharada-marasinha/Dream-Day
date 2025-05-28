@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DreamDay.DAL\DreamDay.DAL.csproj" />
+    <ProjectReference Include="..\DreamDay.Models\DreamDay.Models.csproj" />
+    <ProjectReference Include="..\DreamDay.Utilities\DreamDay.Utilities.csproj" />
+  </ItemGroup>
+
+</Project>

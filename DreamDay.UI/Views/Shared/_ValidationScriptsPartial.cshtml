@@ -1,0 +1,20 @@
+﻿@* Enables client-side validation using jQuery Validation and unobtrusive validation *@
+@*
+@section Scripts {
+    <environment include="Development">
+        <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+        <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"
+                integrity="sha384-+6IpD3sGoJjlZIDn8bSU0qwNzE+9UrSlEOv2GFlptFQMyxA30IvR5tWm9ZQyA0Sr"
+                crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"
+                integrity="sha384-v+YZBriSQE0tU6Wj33D2lQ7ShI0p2kXb/2cDEjZAX1Ht0mfIKZy37H+Wq5OwXWNY"
+                crossorigin="anonymous"></script>
+    </environment>
+}
+*@
+
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
