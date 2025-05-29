@@ -13,6 +13,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/DreamDay.UI.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="bg-light m-0 p-0">
     <!-- Loading Spinner -->
@@ -71,7 +72,7 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" asp-controller="Roles" asp-action="Index">
+                                            <a class="dropdown-item" asp-controller="Users" asp-action="Index">
                                                 <i class="bi bi-shield me-2"></i>Manage Roles
                                             </a>
                                         </li>
@@ -83,13 +84,13 @@
                             @if (User.IsInRole("Supplier"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link px-3 rounded-pill text-white mx-1" asp-controller="Supplier" asp-action="Dashboard">
+                                    <a class="nav-link px-3 rounded-pill text-white mx-1" asp-controller="Vendor">
                                         <i class="bi bi-box-seam me-1"></i>Supplier Portal
                                     </a>
                                 </li>
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle text-white px-3 rounded-pill mx-1" href="#" id="supplierDropdown" role="button" data-bs-toggle="dropdown">
-                                        <i class="bi bi-basket me-1"></i>My Services
+                                        <i class="bi bi-basket text-white me-1"></i>My Services
                                     </a>
                                     <ul class="dropdown-menu">
                                         <li>
@@ -103,7 +104,7 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" asp-controller="Supplier" asp-action="Bookings">
+                                            <a class="dropdown-item" asp-controller="Booking">
                                                 <i class="bi bi-calendar-check me-2"></i>Bookings
                                             </a>
                                         </li>
@@ -120,8 +121,8 @@
                                     </a>
                                 </li>
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle px-3 rounded-pill mx-1" href="#" id="weddingDropdown" role="button" data-bs-toggle="dropdown">
-                                        <i class="bi bi-heart me-1"></i>My Wedding
+                                    <a class="nav-link text-white dropdown-toggle px-3 rounded-pill mx-1" href="#" id="weddingDropdown" role="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-hear me-1"></i>My Wedding
                                     </a>
                                     <ul class="dropdown-menu">
                                         <li>
@@ -150,7 +151,7 @@
 
                             <!-- Common for All Roles -->
                             <li class="nav-item">
-                                <a class="nav-link px-3 rounded-pill mx-1" asp-controller="Profile" asp-action="Index">
+                                <a class="nav-link px-3 rounded-pill mx-1" asp-controller="users" asp-action="details" asp-route-id="@User.FindFirstValue(ClaimTypes.NameIdentifier)">
                                     <i class="bi bi-person me-1"></i>Profile
                                 </a>
                             </li>

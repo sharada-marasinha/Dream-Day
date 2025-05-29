@@ -1,686 +1,295 @@
-﻿@{
+﻿@model DreamDay.Models.ViewModels.WeddingViewModel
+@{
     ViewData["Title"] = "Create New Wedding";
+    // Pre-populate services list (can also be done in ViewModel or passed via ViewData)
+    var allAvailableServices = new[] { "Photographer", "Catering", "Florist", "Music/DJ", "Planner", "Venue Booking", "Decorations", "Invitations", "Transportation", "Cake" };
 }
 
-@if (User.IsInRole("User"))
+<h2>@ViewData["Title"]</h2>
+
+@if (User.IsInRole("User") || User.IsInRole("Admin"))
 {
-
-    <div class="container-fluid py-4">
-        <div class="row">
-            <!-- Main Content -->
-            <div class="col-lg-9">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h3 class="mb-0">Plan Your Wedding</h3>
-                        <div class="progress" style="width: 300px; height: 20px;">
-                            <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">Step 1 of 4</div>
-                        </div>
-                    </div>
-
-                    <!-- Wedding Creation Wizard -->
-                    <div class="card-body">
-                        <form id="weddingForm" method="post" enctype="multipart/form-data">
-                            <!-- Step 1: Basic Information -->
-                            <div class="wizard-step" id="step1">
-                                <h5 class="text-primary border-bottom pb-2 mb-4">Wedding Details</h5>
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label for="weddingName" class="form-label">Wedding Name/Couple's Name*</label>
-                                        <input type="text" class="form-control" id="weddingName" name="weddingName" required placeholder="e.g. Sarah & John's Wedding">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="weddingDate" class="form-label">Wedding Date*</label>
-                                        <input type="date" class="form-control" id="weddingDate" name="weddingDate" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="weddingLocation" class="form-label">Location/Venue*</label>
-                                        <input type="text" class="form-control" id="weddingLocation" name="weddingLocation" required placeholder="Enter venue name or address">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="weddingTheme" class="form-label">Wedding Theme</label>
-                                        <input type="text" class="form-control" id="weddingTheme" name="weddingTheme" placeholder="e.g. Beach, Vintage, Modern">
-                                    </div>
-                                    <div class="col-12">
-                                        <label for="weddingDescription" class="form-label">Description</label>
-                                        <textarea class="form-control" id="weddingDescription" name="weddingDescription" rows="3" placeholder="Tell us about your wedding vision"></textarea>
-                                    </div>
-                                    <div class="col-12">
-                                        <label for="coverImage" class="form-label">Cover Image</label>
-                                        <input type="file" class="form-control" id="coverImage" name="coverImage" accept="image/*">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Step 2: Guest Management -->
-                            <div class="wizard-step d-none" id="step2">
-                                <h5 class="text-primary border-bottom pb-2 mb-4">Guest Management</h5>
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label for="estimatedGuests" class="form-label">Estimated Number of Guests*</label>
-                                        <input type="number" class="form-control" id="estimatedGuests" name="estimatedGuests" required min="1" value="100">
-                                        <small class="text-muted">This will help calculate approximate costs</small>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="guestList" class="form-label">Upload Guest List (CSV)</label>
-                                        <input type="file" class="form-control" id="guestList" name="guestList" accept=".csv">
-                                        <small class="text-muted">Format: Name,Email,Phone,RSVP Status</small>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="enableRSVP" name="enableRSVP">
-                                            <label class="form-check-label" for="enableRSVP">
-                                                Enable Online RSVP System
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 mt-3">
-                                        <h6>Guest Categories</h6>
-                                        <div class="table-responsive">
-                                            <table class="table table-sm" id="guestCategories">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Category</th>
-                                                        <th>Count</th>
-                                                        <th>Action</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td><input type="text" class="form-control form-control-sm" name="guestCategories[0].name" placeholder="e.g. Family"></td>
-                                                        <td><input type="number" class="form-control form-control-sm" name="guestCategories[0].count" min="0"></td>
-                                                        <td><button type="button" class="btn btn-sm btn-outline-danger remove-category"><i class="bi bi-trash"></i></button></td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                            <button type="button" class="btn btn-sm btn-outline-primary" id="addCategory">Add Category</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Step 3: Budget Planning -->
-                            <div class="wizard-step d-none" id="step3">
-                                <h5 class="text-primary border-bottom pb-2 mb-4">Budget Planning</h5>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="card mb-4">
-                                            <div class="card-header bg-light">
-                                                <h6 class="mb-0">Budget Summary</h6>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="mb-3">
-                                                    <label for="totalBudget" class="form-label">Total Budget ($)*</label>
-                                                    <input type="number" class="form-control" id="totalBudget" name="totalBudget" required min="1000" step="100" value="10000">
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label for="budgetPerGuest" class="form-label">Estimated Cost Per Guest</label>
-                                                    <input type="number" class="form-control" id="budgetPerGuest" name="budgetPerGuest" readonly>
-                                                    <small class="text-muted">Calculated based on total budget and guest count</small>
-                                                </div>
-                                                <div class="alert alert-info">
-                                                    <i class="bi bi-info-circle"></i> Based on <span id="guestCountDisplay">100</span> guests, your estimated per guest cost is $<span id="perGuestCost">100</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="card">
-                                            <div class="card-header bg-light">
-                                                <h6 class="mb-0">Budget Allocation</h6>
-                                            </div>
-                                            <div class="card-body">
-                                                <div id="budgetAllocationChart" style="height: 200px;"></div>
-                                                <div class="mt-3">
-                                                    <label class="form-label">Budget Breakdown</label>
-                                                    <div class="table-responsive">
-                                                        <table class="table table-sm">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Category</th>
-                                                                    <th>Percentage</th>
-                                                                    <th>Amount</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <tr>
-                                                                    <td>Venue</td>
-                                                                    <td><input type="number" class="form-control form-control-sm" name="venuePercent" value="40" min="0" max="100">%</td>
-                                                                    <td>$<span class="venueAmount">4000</span></td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>Catering</td>
-                                                                    <td><input type="number" class="form-control form-control-sm" name="cateringPercent" value="30" min="0" max="100">%</td>
-                                                                    <td>$<span class="cateringAmount">3000</span></td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>Photography</td>
-                                                                    <td><input type="number" class="form-control form-control-sm" name="photographyPercent" value="10" min="0" max="100">%</td>
-                                                                    <td>$<span class="photographyAmount">1000</span></td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>Entertainment</td>
-                                                                    <td><input type="number" class="form-control form-control-sm" name="entertainmentPercent" value="8" min="0" max="100">%</td>
-                                                                    <td>$<span class="entertainmentAmount">800</span></td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>Other</td>
-                                                                    <td><input type="number" class="form-control form-control-sm" name="otherPercent" value="12" min="0" max="100">%</td>
-                                                                    <td>$<span class="otherAmount">1200</span></td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Step 4: Vendor & Services -->
-                            <div class="wizard-step d-none" id="step4">
-                                <h5 class="text-primary border-bottom pb-2 mb-4">Vendors & Services</h5>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="card mb-4">
-                                            <div class="card-header bg-light">
-                                                <h6 class="mb-0">Required Services</h6>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Select Needed Services</label>
-                                                    <div class="list-group">
-                                                        <div class="list-group-item">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" id="photographer" name="services" value="Photographer">
-                                                                <label class="form-check-label" for="photographer">Photographer</label>
-                                                            </div>
-                                                        </div>
-                                                        <div class="list-group-item">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" id="catering" name="services" value="Catering">
-                                                                <label class="form-check-label" for="catering">Catering</label>
-                                                            </div>
-                                                        </div>
-                                                        <div class="list-group-item">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" id="florist" name="services" value="Florist">
-                                                                <label class="form-check-label" for="florist">Florist</label>
-                                                            </div>
-                                                        </div>
-                                                        <div class="list-group-item">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" id="music" name="services" value="Music">
-                                                                <label class="form-check-label" for="music">Music/DJ</label>
-                                                            </div>
-                                                        </div>
-                                                        <div class="list-group-item">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" id="planner" name="services" value="Planner">
-                                                                <label class="form-check-label" for="planner">Wedding Planner</label>
-                                                            </div>
-                                                        </div>
-                                                        <div class="list-group-item">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" id="decor" name="services" value="Decor">
-                                                                <label class="form-check-label" for="decor">Decorations</label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="card">
-                                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                                                <h6 class="mb-0">Vendor Requests</h6>
-                                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#vendorSearchModal">
-                                                    <i class="bi bi-search"></i> Find Vendors
-                                                </button>
-                                            </div>
-                                            <div class="card-body">
-                                                <div id="selectedVendors">
-                                                    <p class="text-muted">No vendors selected yet. Click "Find Vendors" to search and add vendors to your wedding.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Step 5: Agenda & Timeline -->
-                            <div class="wizard-step d-none" id="step5">
-                                <h5 class="text-primary border-bottom pb-2 mb-4">Wedding Agenda</h5>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="card mb-4">
-                                            <div class="card-header bg-light">
-                                                <h6 class="mb-0">Event Timeline</h6>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="table-responsive">
-                                                    <table class="table" id="agendaTable">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Time</th>
-                                                                <th>Event</th>
-                                                                <th>Location</th>
-                                                                <th>Responsible</th>
-                                                                <th>Notes</th>
-                                                                <th>Action</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td><input type="time" class="form-control form-control-sm" name="agenda[0].time"></td>
-                                                                <td><input type="text" class="form-control form-control-sm" name="agenda[0].event" placeholder="e.g. Ceremony"></td>
-                                                                <td><input type="text" class="form-control form-control-sm" name="agenda[0].location"></td>
-                                                                <td><input type="text" class="form-control form-control-sm" name="agenda[0].responsible"></td>
-                                                                <td><input type="text" class="form-control form-control-sm" name="agenda[0].notes"></td>
-                                                                <td><button type="button" class="btn btn-sm btn-outline-danger remove-agenda"><i class="bi bi-trash"></i></button></td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                    <button type="button" class="btn btn-sm btn-outline-primary" id="addAgendaItem">Add Event</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Navigation Buttons -->
-                            <div class="d-flex justify-content-between mt-4">
-                                <button type="button" class="btn btn-outline-secondary" id="prevBtn" disabled>
-                                    <i class="bi bi-arrow-left"></i> Previous
-                                </button>
-                                <button type="button" class="btn btn-primary px-4" id="nextBtn">
-                                    Next <i class="bi bi-arrow-right"></i>
-                                </button>
-                                <button type="submit" class="btn btn-success px-4 d-none" id="submitBtn">
-                                    <i class="bi bi-save"></i> Create Wedding Plan
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+    <form asp-action="Index" asp-controller="Wedding" method="post" enctype="multipart/form-data" id="weddingForm">
+        @Html.AntiForgeryToken()
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Plan Your Dream Day</h3>
             </div>
+            <div class="card-body">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-            <!-- Sidebar -->
-            <div class="col-lg-3">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-light">
-                        <h6 class="mb-0">Wedding Summary</h6>
+                <h4>Basic Details</h4>
+                <hr />
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="WeddingName" class="form-label"></label>
+                        <input asp-for="WeddingName" class="form-control" required />
+                        <span asp-validation-for="WeddingName" class="text-danger"></span>
                     </div>
-                    <div class="card-body">
-                        <div class="text-center mb-3">
-                            <img src="https://via.placeholder.com/300x150?text=Wedding+Cover" alt="Cover Image" class="img-fluid rounded mb-2" id="coverPreview">
-                        </div>
-                        <h5 id="weddingNamePreview">Wedding Name</h5>
-                        <p class="text-muted" id="weddingDatePreview">Date not set</p>
-                        <p class="text-muted" id="weddingLocationPreview">Location not set</p>
+                    <div class="col-md-3">
+                        <label asp-for="WeddingDate" class="form-label"></label>
+                        <input asp-for="WeddingDate" class="form-control" type="date" required />
+                        <span asp-validation-for="WeddingDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-3">
+                        @* <label asp-for="StartTime" class="form-label"></label> *@
+                        @* <input asp-for="StartTime" class="form-control" type="time" required /> *@
+                        @* <span asp-validation-for="StartTime" class="text-danger"></span> *@
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="WeddingLocation" class="form-label"></label>
+                        <input asp-for="WeddingLocation" class="form-control" required />
+                        <span asp-validation-for="WeddingLocation" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="WeddingTheme" class="form-label"></label>
+                        <input asp-for="WeddingTheme" class="form-control" />
+                        <span asp-validation-for="WeddingTheme" class="text-danger"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="WeddingDescription" class="form-label"></label>
+                        <textarea asp-for="WeddingDescription" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="WeddingDescription" class="text-danger"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="CoverImage" class="form-label">Cover Image</label>
+                        <input asp-for="CoverImage" class="form-control" type="file" accept="image/*" />
+                        <span asp-validation-for="CoverImage" class="text-danger"></span>
+                    </div>
+                </div>
 
-                        <hr>
-
-                        <div class="mb-3">
-                            <h6>Guest Count</h6>
-                            <p class="mb-1" id="guestCountPreview">0 guests</p>
-                            <div class="progress" style="height: 5px;">
-                                <div class="progress-bar bg-primary" role="progressbar" style="width: 0%;"></div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <h6>Budget</h6>
-                            <p class="mb-1" id="budgetPreview">$0</p>
-                            <small class="text-muted" id="perGuestPreview">$0 per guest</small>
-                        </div>
-
-                        <div class="mb-3">
-                            <h6>Vendors</h6>
-                            <ul class="list-unstyled" id="vendorsPreview">
-                                <li>No vendors selected</li>
-                            </ul>
-                        </div>
-
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i> Complete all steps to finalize your wedding plan.
+                <h4>Guest Information</h4>
+                <hr />
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label asp-for="EstimatedGuests" class="form-label"></label>
+                        <input asp-for="EstimatedGuests" class="form-control" type="number" min="1" required />
+                        <span asp-validation-for="EstimatedGuests" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="GuestList" class="form-label">Upload Guest List (Optional CSV)</label>
+                        <input asp-for="GuestList" class="form-control" type="file" accept=".csv" />
+                        <span asp-validation-for="GuestList" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-center pt-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="EnableRSVP" class="form-check-input" type="checkbox" />
+                            <label asp-for="EnableRSVP" class="form-check-label"></label>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Vendor Search Modal -->
-    <div class="modal fade" id="vendorSearchModal" tabindex="-1" aria-labelledby="vendorSearchModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="vendorSearchModalLabel">Find Vendors</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
+                <h5>Guest Categories</h5>
+                <table class="table table-sm table-bordered" id="guestCategoriesTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Category Name</th>
+                            <th style="width: 150px;">Count</th>
+                            <th style="width: 100px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.GuestCategories != null && Model.GuestCategories.Any())
+                        {
+                            for (int i = 0; i < Model.GuestCategories.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        <input asp-for="GuestCategories[i].Name" class="form-control form-control-sm" placeholder="e.g., Bride's Family" />
+                                        <span asp-validation-for="GuestCategories[i].Name" class="text-danger"></span>
+                                    </td>
+                                    <td>
+                                        <input asp-for="GuestCategories[i].Count" class="form-control form-control-sm" type="number" min="0" />
+                                        <span asp-validation-for="GuestCategories[i].Count" class="text-danger"></span>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-category">Remove</button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td>
+                                    <input name="GuestCategories[0].Name" class="form-control form-control-sm" placeholder="e.g., Bride's Family" />
+                                </td>
+                                <td>
+                                    <input name="GuestCategories[0].Count" class="form-control form-control-sm" type="number" min="0" />
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-category">Remove</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="addCategory"><i class="bi bi-plus-circle"></i> Add Category</button>
+
+                <h4>Budget & Services</h4>
+                <hr />
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="TotalBudget" class="form-label"></label>
                         <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Search vendors..." id="vendorSearchInput">
-                            <button class="btn btn-outline-secondary" type="button" id="vendorSearchBtn">Search</button>
+                            <span class="input-group-text">$</span>
+                            <input asp-for="TotalBudget" class="form-control" type="number" min="0" step="0.01" required />
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Filter by Category</label>
-                        <select class="form-select" id="vendorCategoryFilter">
-                            <option value="">All Categories</option>
-                            <option>Photography</option>
-                            <option>Catering</option>
-                            <option>Florist</option>
-                            <option>Music</option>
-                            <option>Planning</option>
-                            <option>Venue</option>
-                        </select>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover" id="vendorResultsTable">
-                            <thead>
-                                <tr>
-                                    <th>Vendor</th>
-                                    <th>Category</th>
-                                    <th>Rating</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Sample vendor data - in real app this would come from API -->
-                                <tr>
-                                    <td>Elegant Photography</td>
-                                    <td>Photography</td>
-                                    <td>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-half text-warning"></i>
-                                        <span class="ms-1">4.5</span>
-                                    </td>
-                                    <td><button class="btn btn-sm btn-outline-primary select-vendor">Select</button></td>
-                                </tr>
-                                <tr>
-                                    <td>Gourmet Catering Co.</td>
-                                    <td>Catering</td>
-                                    <td>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <span class="ms-1">5.0</span>
-                                    </td>
-                                    <td><button class="btn btn-sm btn-outline-primary select-vendor">Select</button></td>
-                                </tr>
-                                <tr>
-                                    <td>Blooms & Petals</td>
-                                    <td>Florist</td>
-                                    <td>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <i class="bi bi-star text-warning"></i>
-                                        <span class="ms-1">4.0</span>
-                                    </td>
-                                    <td><button class="btn btn-sm btn-outline-primary select-vendor">Select</button></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <span asp-validation-for="TotalBudget" class="text-danger"></span>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                <h5>Required Services</h5>
+                <div class="mb-3 p-3 border rounded">
+                    <div class="row">
+                        @for (int i = 0; i < allAvailableServices.Length; i++)
+                        {
+                            var service = allAvailableServices[i];
+                            <div class="col-md-3 col-sm-6">
+                                <div class="form-check">
+                                    @* Ensure Model.Services is List<string> in your ViewModel *@
+                                    <input class="form-check-input" type="checkbox" name="Services" value="@service" id="service_@service.Replace(" ", "")"
+                                    @(Model.Services != null && Model.Services.Contains(service) ? "checked" : "") />
+                                    <label class="form-check-label" for="service_@service.Replace(" ", "")">@service</label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+
+                <h4>Day's Agenda</h4>
+                <hr />
+                <table class="table table-sm table-bordered" id="agendaTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 130px;">Time</th>
+                            <th>Event/Activity</th>
+                            <th>Location</th>
+                            <th>Responsible Person</th>
+                            <th>Notes</th>
+                            <th style="width: 100px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Agenda != null && Model.Agenda.Any())
+                        {
+                            for (int i = 0; i < Model.Agenda.Count; i++)
+                            {
+                                <tr>
+                                    <td><input asp-for="Agenda[i].Time" class="form-control form-control-sm" type="time" /></td>
+                                    <td><input asp-for="Agenda[i].Event" class="form-control form-control-sm" placeholder="e.g., Ceremony" /></td>
+                                    <td><input asp-for="Agenda[i].Location" class="form-control form-control-sm" placeholder="e.g., Main Hall" /></td>
+                                    <td><input asp-for="Agenda[i].Responsible" class="form-control form-control-sm" placeholder="e.g., Officiant" /></td>
+                                    <td><input asp-for="Agenda[i].Notes" class="form-control form-control-sm" /></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-agenda">Remove</button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td><input name="Agenda[0].Time" class="form-control form-control-sm" type="time" /></td>
+                                <td><input name="Agenda[0].Event" class="form-control form-control-sm" placeholder="e.g., Ceremony" /></td>
+                                <td><input name="Agenda[0].Location" class="form-control form-control-sm" placeholder="e.g., Main Hall" /></td>
+                                <td><input name="Agenda[0].Responsible" class="form-control form-control-sm" placeholder="e.g., Officiant" /></td>
+                                <td><input name="Agenda[0].Notes" class="form-control form-control-sm" /></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-agenda">Remove</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="addAgenda"><i class="bi bi-plus-circle"></i> Add Agenda Item</button>
+
+                <hr />
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="bi bi-save"></i> Create Wedding
+                    </button>
+                    <a asp-action="Index" asp-controller="Home" class="btn btn-outline-secondary">Cancel</a>
                 </div>
             </div>
         </div>
-    </div>
-
-
+    </form>
 }
 else
 {
     <div class="alert alert-danger mt-5" role="alert">
         <h4 class="alert-heading"><i class="bi bi-shield-lock me-2"></i>Access Denied</h4>
-        <p>You don't have permission to access this page. Only Users can Create Wedding</p>
+        <p>You do not have permission to create a new wedding. Please log in with appropriate credentials.</p>
         <hr>
         <p class="mb-0">If you believe this is an error, please contact your system administrator.</p>
     </div>
-
 }
 
-
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
-        $(document).ready(function() {
-            // Wizard navigation
-            let currentStep = 1;
-            const totalSteps = 5;
-
-            // Update progress bar
-            function updateProgress() {
-                const percent = (currentStep / totalSteps) * 100;
-                $('.progress-bar').css('width', percent + '%').text('Step ' + currentStep + ' of ' + totalSteps);
-
-                // Update button states
-                $('#prevBtn').prop('disabled', currentStep === 1);
-                $('#nextBtn').toggle(currentStep < totalSteps);
-                $('#submitBtn').toggle(currentStep === totalSteps);
-            }
-
-            // Next button click
-            $('#nextBtn').click(function() {
-                if (validateStep(currentStep)) {
-                    $('.wizard-step').addClass('d-none');
-                    currentStep++;
-                    $('#step' + currentStep).removeClass('d-none');
-                    updateProgress();
-                }
-            });
-
-            // Previous button click
-            $('#prevBtn').click(function() {
-                $('.wizard-step').addClass('d-none');
-                currentStep--;
-                $('#step' + currentStep).removeClass('d-none');
-                updateProgress();
-            });
-
-            // Validate current step
-            function validateStep(step) {
-                let isValid = true;
-
-                if (step === 1) {
-                    if ($('#weddingName').val() === '') {
-                        alert('Please enter a wedding name');
-                        isValid = false;
-                    }
-                    if ($('#weddingDate').val() === '') {
-                        alert('Please select a wedding date');
-                        isValid = false;
-                    }
-                    if ($('#weddingLocation').val() === '') {
-                        alert('Please enter a wedding location');
-                        isValid = false;
-                    }
-                } else if (step === 2) {
-                    if ($('#estimatedGuests').val() === '' || parseInt($('#estimatedGuests').val()) <= 0) {
-                        alert('Please enter a valid guest count');
-                        isValid = false;
-                    }
-                } else if (step === 3) {
-                    if ($('#totalBudget').val() === '' || parseInt($('#totalBudget').val()) <= 0) {
-                        alert('Please enter a valid budget amount');
-                        isValid = false;
-                    }
-                }
-
-                if (isValid) {
-                    updateSummaryPreview();
-                }
-
-                return isValid;
-            }
-
-            // Update summary preview
-            function updateSummaryPreview() {
-                // Basic info
-                $('#weddingNamePreview').text($('#weddingName').val() || 'Wedding Name');
-                $('#weddingDatePreview').text($('#weddingDate').val() ? new Date($('#weddingDate').val()).toLocaleDateString() : 'Date not set');
-                $('#weddingLocationPreview').text($('#weddingLocation').val() || 'Location not set');
-
-                // Guest count
-                const guestCount = parseInt($('#estimatedGuests').val()) || 0;
-                $('#guestCountPreview').text(guestCount + ' guest' + (guestCount !== 1 ? 's' : ''));
-                $('.progress-bar', '#guestCountPreview').parent().css('width', Math.min(guestCount / 200 * 100, 100) + '%');
-
-                // Budget
-                const totalBudget = parseInt($('#totalBudget').val()) || 0;
-                $('#budgetPreview').text('$' + totalBudget.toLocaleString());
-                const perGuest = guestCount > 0 ? Math.round(totalBudget / guestCount) : 0;
-                $('#perGuestPreview').text('$' + perGuest + ' per guest');
-                $('#budgetPerGuest').val(perGuest);
-
-                // Cover image preview
-                if ($('#coverImage')[0].files && $('#coverImage')[0].files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        $('#coverPreview').attr('src', e.target.result);
-                    };
-                    reader.readAsDataURL($('#coverImage')[0].files[0]);
-                }
-            }
-
-            // Budget calculation
-            function calculateBudget() {
-                const totalBudget = parseInt($('#totalBudget').val()) || 0;
-                const guestCount = parseInt($('#estimatedGuests').val()) || 0;
-
-                $('input[name$="Percent"]').each(function() {
-                    const percent = parseInt($(this).val()) || 0;
-                    const amount = Math.round(totalBudget * percent / 100);
-                    const className = $(this).attr('name').replace('Percent', 'Amount');
-                    $('.' + className).text(amount);
+        $(document).ready(function () {
+            // Function to re-index input names for a given table
+            function reindexTableRows(tableSelector, namePrefix) {
+                $(tableSelector + ' tbody tr').each(function (rowIndex, row) {
+                    $(row).find('input, select, textarea').each(function (colIndex, el) {
+                        var oldName = $(el).attr('name');
+                        if (oldName) {
+                            var newName = oldName.replace(new RegExp(namePrefix + "\\[\\d+\\]", "g"), namePrefix + '[' + rowIndex + ']');
+                            $(el).attr('name', newName);
+                            $(el).attr('id', newName); // Also update id for labels if any
+                        }
+                    });
                 });
-
-                if (guestCount > 0) {
-                    $('#budgetPerGuest').val(Math.round(totalBudget / guestCount));
-                }
             }
 
-            // Event listeners
-            $('#estimatedGuests, #totalBudget').on('input', function() {
-                calculateBudget();
-                updateSummaryPreview();
+            // Guest Categories dynamic add/remove
+            let categoryTable = '#guestCategoriesTable';
+            $('#addCategory').click(function () {
+                let categoryIndex = $(categoryTable + ' tbody tr').length;
+                let row = `<tr>
+                            <td><input name="GuestCategories[${categoryIndex}].Name" class="form-control form-control-sm" placeholder="e.g., Bride's Family" /></td>
+                            <td><input name="GuestCategories[${categoryIndex}].Count" class="form-control form-control-sm" type="number" min="0" /></td>
+                            <td><button type="button" class="btn btn-sm btn-outline-danger remove-category">Remove</button></td>
+                           </tr>`;
+                $(categoryTable + ' tbody').append(row);
             });
-
-            $('input[name$="Percent"]').on('input', function() {
-                calculateBudget();
-            });
-
-            $('#coverImage').change(function() {
-                updateSummaryPreview();
-            });
-
-            // Add guest category
-            let categoryCount = 1;
-            $('#addCategory').click(function() {
-                const newRow = `
-                    <tr>
-                        <td><input type="text" class="form-control form-control-sm" name="guestCategories[${categoryCount}].name"></td>
-                        <td><input type="number" class="form-control form-control-sm" name="guestCategories[${categoryCount}].count" min="0"></td>
-                        <td><button type="button" class="btn btn-sm btn-outline-danger remove-category"><i class="bi bi-trash"></i></button></td>
-                    </tr>
-                `;
-                $('#guestCategories tbody').append(newRow);
-                categoryCount++;
-            });
-
-            // Remove guest category
-            $(document).on('click', '.remove-category', function() {
+            $(document).on('click', '.remove-category', function () {
                 $(this).closest('tr').remove();
+                reindexTableRows(categoryTable, 'GuestCategories');
             });
 
-            // Add agenda item
-            let agendaCount = 1;
-            $('#addAgendaItem').click(function() {
-                const newRow = `
-                    <tr>
-                        <td><input type="time" class="form-control form-control-sm" name="agenda[${agendaCount}].time"></td>
-                        <td><input type="text" class="form-control form-control-sm" name="agenda[${agendaCount}].event" placeholder="e.g. Ceremony"></td>
-                        <td><input type="text" class="form-control form-control-sm" name="agenda[${agendaCount}].location"></td>
-                        <td><input type="text" class="form-control form-control-sm" name="agenda[${agendaCount}].responsible"></td>
-                        <td><input type="text" class="form-control form-control-sm" name="agenda[${agendaCount}].notes"></td>
-                        <td><button type="button" class="btn btn-sm btn-outline-danger remove-agenda"><i class="bi bi-trash"></i></button></td>
-                    </tr>
-                `;
-                $('#agendaTable tbody').append(newRow);
-                agendaCount++;
+            // Agenda dynamic add/remove
+            let agendaTable = '#agendaTable';
+            $('#addAgenda').click(function () {
+                let agendaIndex = $(agendaTable + ' tbody tr').length;
+                let row = `<tr>
+                            <td><input name="Agenda[${agendaIndex}].Time" class="form-control form-control-sm" type="time" /></td>
+                            <td><input name="Agenda[${agendaIndex}].Event" class="form-control form-control-sm" placeholder="e.g., Ceremony" /></td>
+                            <td><input name="Agenda[${agendaIndex}].Location" class="form-control form-control-sm" placeholder="e.g., Main Hall" /></td>
+                            <td><input name="Agenda[${agendaIndex}].Responsible" class="form-control form-control-sm" placeholder="e.g., Officiant" /></td>
+                            <td><input name="Agenda[${agendaIndex}].Notes" class="form-control form-control-sm" /></td>
+                            <td><button type="button" class="btn btn-sm btn-outline-danger remove-agenda">Remove</button></td>
+                           </tr>`;
+                $(agendaTable + ' tbody').append(row);
             });
-
-            // Remove agenda item
-            $(document).on('click', '.remove-agenda', function() {
+            $(document).on('click', '.remove-agenda', function () {
                 $(this).closest('tr').remove();
+                reindexTableRows(agendaTable, 'Agenda');
             });
 
-            // Vendor selection
-            $(document).on('click', '.select-vendor', function() {
-                const vendorRow = $(this).closest('tr');
-                const vendorName = vendorRow.find('td:eq(0)').text();
-                const vendorCategory = vendorRow.find('td:eq(1)').text();
-
-                if ($('#vendorsPreview li:contains("' + vendorName + '")').length === 0) {
-                    $('#vendorsPreview').append('<li>' + vendorName + ' <small class="text-muted">(' + vendorCategory + ')</small></li>');
-
-                    $('#selectedVendors').append(`
-                        <div class="card mb-2">
-                            <div class="card-body p-2">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-0">${vendorName}</h6>
-                                        <small class="text-muted">${vendorCategory}</small>
-                                    </div>
-                                    <button type="button" class="btn btn-sm btn-outline-danger remove-vendor">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `);
-
-                    // Show success message if it was the first vendor
-                    if ($('#selectedVendors .card').length === 1) {
-                        $('#selectedVendors p.text-muted').hide();
-                    }
-                }
-
-                $('#vendorSearchModal').modal('hide');
-            });
-
-            // Remove vendor
-            $(document).on('click', '.remove-vendor', function() {
-                const vendorCard = $(this).closest('.card');
-                const vendorName = vendorCard.find('h6').text();
-
-                vendorCard.remove();
-                $('#vendorsPreview li:contains("' + vendorName + '")').remove();
-
-                // Show placeholder if no vendors left
-                if ($('#selectedVendors .card').length === 0) {
-                    $('#selectedVendors p.text-muted').show();
-                }
-            });
-
-            // Initialize
-            updateProgress();
-            calculateBudget();
-            updateSummaryPreview();
+             // Initialize with at least one row if model is empty (for create scenarios)
+            if ('@Model.GuestCategories' === null || '@Model.GuestCategories.Count' === '0') {
+                 if ($(categoryTable + ' tbody tr').length === 0) { // Check if rendered rows are none
+                    $('#addCategory').click(); // Add one default row
+                 }
+            }
+             if ('@Model.Agenda' === null || '@Model.Agenda.Count' === '0') {
+                 if ($(agendaTable + ' tbody tr').length === 0) { // Check if rendered rows are none
+                    $('#addAgenda').click(); // Add one default row
+                 }
+            }
         });
     </script>
 }

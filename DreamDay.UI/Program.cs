@@ -34,6 +34,13 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IWeddingService, WeddingService>();
+
+builder.Services.AddScoped<IWeddingService, WeddingService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IWeddingRepository, WeddingRepository>();
+// Repeat for other repositories
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

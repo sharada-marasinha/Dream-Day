@@ -3,8 +3,7 @@
 @{
     ViewData["Title"] = "Create User";
 }
-@if (User.IsInRole("Admin"))
-{
+
     <h1>Create User</h1>
 
     <form asp-action="Create" method="post">
@@ -43,16 +42,8 @@
         <a asp-action="Index" class="btn btn-secondary">Cancel</a>
     </form>
 
-} 
-else{
-<div class="alert alert-danger mt-5" role="alert">
-    <h4 class="alert-heading"><i class="bi bi-shield-lock me-2"></i>Access Denied</h4>
-    <p>You don't have permission to access this page. Only administrators can manage users.</p>
-    <hr>
-    <p class="mb-0">If you believe this is an error, please contact your system administrator.</p>
-</div>
 
-}
+
 
 @section Scripts {
     @{

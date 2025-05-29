@@ -21,9 +21,16 @@ namespace DreamDay.Models.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
 
-        // Navigation properties
-   
-        public ICollection<WeddingTask> Tasks { get; set; }
+        // New properties
+        public string? CoverImagePath { get; set; } // Store uploaded image path
 
+        // Navigation properties for new data
+        public ICollection<GuestCategory> GuestCategories { get; set; } // New entity
+        public bool EnableRSVP { get; set; }
+        public ICollection<WeddingService> SelectedServices { get; set; } // New entity for services
+        public ICollection<AgendaItem> Agenda { get; set; } // New entity for agenda items
+
+        // Existing navigation
+        public ICollection<WeddingTask> Tasks { get; set; }
     }
 }
