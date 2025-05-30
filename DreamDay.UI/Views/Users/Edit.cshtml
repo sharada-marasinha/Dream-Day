@@ -1,52 +1,115 @@
 ﻿@model DreamDay.Models.ViewModels.UserViewModel
-
 @{
-    ViewData["Title"] = "Edit User";
+    ViewData["Title"] = $"Edit User: {Model.FullName ?? Model.Email}"; // Display name or email in title
 }
 
-<h1>Edit User</h1>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-person-gear me-2"></i>Edit User Details</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="Id" />
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                                <input asp-for="FullName" class="form-control" />
+                            </div>
+                            <span asp-validation-for="FullName" class="text-danger d-block mt-1"></span>
+                        </div>
 
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input asp-for="Email" type="email" class="form-control" />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger d-block mt-1"></span>
+                        </div>
 
-    <div class="form-group mb-3">
-        <label asp-for="FullName" class="form-label"></label>
-        <input asp-for="FullName" class="form-control" />
-        <span asp-validation-for="FullName" class="text-danger"></span>
+                        <hr class="my-4" />
+                        <h5 class="mb-3 text-muted">Change Password (Optional)</h5>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label">New Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-key"></i></span>
+                                <input asp-for="Password" type="password" class="form-control" placeholder="Leave blank to keep current" />
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger d-block mt-1"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ConfirmPassword" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-shield-check"></i></span>
+                                <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm if changing password" />
+                            </div>
+                            <span asp-validation-for="ConfirmPassword" class="text-danger d-block mt-1"></span>
+                        </div>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <hr class="my-4" />
+                            <h5 class="mb-3 text-muted">Administrative Settings</h5>
+                            <div class="mb-3">
+                                <label asp-for="Role" class="form-label"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-person-check-fill"></i></span>
+                                    <select asp-for="Role" class="form-select">
+                                        @* Changed to form-select for Bootstrap 5 *@
+                                        <option value="">-- Select Role --</option>
+                                        <option value="User">User (Client/Couple)</option>
+                                        <option value="Admin">Administrator</option>
+                                        <option value="Supplier">Supplier/Vendor</option>
+                                        @* Add other roles as needed *@
+                                    </select>
+                                </div>
+                                <span asp-validation-for="Role" class="text-danger d-block mt-1"></span>
+                            </div>
+                        }
+
+                        <hr class="my-4" />
+                        <div class="d-flex justify-content-end">
+                            <a asp-action="Index" class="btn btn-outline-secondary me-2">
+                                <i class="bi bi-x-circle me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="Email" class="form-label"></label>
-        <input asp-for="Email" type="email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="Password" class="form-label"></label>
-        <input asp-for="Password" type="password" class="form-control" placeholder="Leave blank to keep current password" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
-    @if (User.IsInRole("Admin"))
-{
-    <div class="form-group mb-3">
-        <label asp-for="Role" class="form-label"></label>
-        <select asp-for="Role" class="form-control">
-            <option value="">-- Select Role --</option>
-            <option value="User">User</option>
-            <option value="Admin">Admin</option>
-            <option value="Supplier">Supplier</option>
-        </select>
-        <span asp-validation-for="Role" class="text-danger"></span>
-    </div>
-}
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-</form>
+</div>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+}
+
+@section Styles {
+    <style>
+        .input-group-text {
+            min-width: 40px; /* For icon alignment */
+            justify-content: center;
+        }
+
+        .card-header h4 {
+            font-size: 1.25rem; /* Adjust header size if needed */
+        }
+
+        .text-danger {
+            font-size: 0.875em; /* Slightly smaller validation messages */
+        }
+    </style>
 }

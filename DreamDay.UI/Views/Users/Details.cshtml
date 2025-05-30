@@ -1,31 +1,163 @@
 ﻿@model DreamDay.Models.Entities.User
-
 @{
-    ViewData["Title"] = "User Details";
+    ViewData["Title"] = $"{Model.FullName}'s Profile";
+    // Basic avatar placeholder (e.g., initials)
+    var initials = string.Join("", Model.FullName.Split(' ').Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s[0])).ToUpper();
+    if (initials.Length > 2)
+    {
+        initials = initials.Substring(0, 2);
+    }
+    else if (initials.Length == 0)
+    {
+        initials = "??";
+    }
 }
 
-<h1>User Details</h1>
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center">
+                    @* Avatar Placeholder - Replace with actual image if you have one *@
+                    <div class="avatar-placeholder mx-auto mb-3">
+                        <span class="avatar-initials">@initials</span>
+                    </div>
+                    @*
+                    // If you had a ProfileImagePath property on your User model:
+                    if (!string.IsNullOrEmpty(Model.ProfileImagePath))
+                    {
+                        <img src="@Url.Content(Model.ProfileImagePath)" alt="@Model.FullName" class="rounded-circle img-fluid mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        // Fallback to initials placeholder
+                         <div class="avatar-placeholder mx-auto mb-3">
+                            <span class="avatar-initials">@initials</span>
+                        </div>
+                    }
+                    *@
 
-<div>
-    <dl class="row">
-        <dt class="col-sm-2">Full Name</dt>
-        <dd class="col-sm-10">@Model.FullName</dd>
+                    <h4 class="card-title mb-1">@Model.FullName</h4>
+                    <p class="text-muted mb-2">@Model.Role</p>
+                    <p class="text-muted small">
+                        <i class="bi bi-envelope-fill me-1"></i> @Model.Email
+                    </p>
 
-        <dt class="col-sm-2">Email</dt>
-        <dd class="col-sm-10">@Model.Email</dd>
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                            <i class="bi bi-pencil-square me-1"></i> Edit Profile
+                        </a>
+                        @* Conceptual: Add Change Password link if functionality exists *@
+                        @* <a asp-action="ChangePassword" asp-controller="Account" asp-route-userId="@Model.Id" class="btn btn-outline-secondary btn-sm mt-2">
+                            <i class="bi bi-key-fill me-1"></i> Change Password
+                        </a> *@
+                    </div>
+                </div>
+            </div>
 
-        <dt class="col-sm-2">Role</dt>
-        <dd class="col-sm-10">@Model.Role</dd>
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        Admin Actions
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a asp-action="Index" asp-controller="UserManagement" class="list-group-item list-group-item-action">
+                            @* Assuming UserManagement controller *@
+                            <i class="bi bi-list-ul me-2"></i>Back to User List
+                        </a>
+                        @* Add other admin-specific actions for this user here *@
+                    </div>
+                </div>
+            }
+        </div>
 
-        <dt class="col-sm-2">Created At (UTC)</dt>
-        <dd class="col-sm-10">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</dd>
-    </dl>
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4 col-md-3">Full Name:</dt>
+                        <dd class="col-sm-8 col-md-9">@Model.FullName</dd>
+
+                        <dt class="col-sm-4 col-md-3">Email Address:</dt>
+                        <dd class="col-sm-8 col-md-9">@Model.Email</dd>
+
+                        <dt class="col-sm-4 col-md-3">Assigned Role:</dt>
+                        <dd class="col-sm-8 col-md-9"><span class="badge bg-info text-dark">@Model.Role</span></dd>
+
+                        <dt class="col-sm-4 col-md-3">Joined On (UTC):</dt>
+                        <dd class="col-sm-8 col-md-9">@Model.CreatedAt.ToString("D") (@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm"))</dd>
+
+                        <dt class="col-sm-4 col-md-3">Member Since:</dt>
+                        <dd class="col-sm-8 col-md-9">@((DateTime.UtcNow - Model.CreatedAt).Days) days</dd>
+
+                        @* Example of conditional information based on role *@
+                        @if (Model.Role == "Client" || Model.Role == "User")
+                        {
+                            <dt class="col-sm-4 col-md-3 mt-3 border-top pt-3">Active Wedding:</dt>
+                            <dd class="col-sm-8 col-md-9 mt-3 border-top pt-3">
+                                @* Here you'd ideally load related wedding info if available *@
+                                <span class="text-muted"><em>(Wedding information placeholder)</em></span><br />
+                                <a href="#" class="btn btn-sm btn-outline-primary mt-1 disabled">View My Wedding Dashboard</a>
+                            </dd>
+                        }
+                    </dl>
+                </div>
+            </div>
+
+            @* Placeholder for other profile sections like Activity, Settings, etc. *@
+            @*
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-activity me-2"></i>Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted"><em>(Recent activity feed placeholder - e.g., last login, weddings created/updated)</em></p>
+                </div>
+            </div>
+            *@
+        </div>
+    </div>
+
+    @if (!User.IsInRole("Admin")) // Back button for non-admins if they somehow landed here without a list context
+    {
+        <div class="mt-4">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left-circle me-1"></i> Back to Home
+            </a>
+        </div>
+    }
 </div>
 
-<p>
-    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
-    @if (User.IsInRole("Admin"))
-{
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+@section Styles {
+    <style>
+        .avatar-placeholder {
+            width: 150px;
+            height: 150px;
+            background-color: #0d6efd; /* Bootstrap primary blue */
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 3rem; /* Adjust size of initials */
+        }
+
+        .card-title {
+            font-weight: 500;
+        }
+
+        dl.row dt {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        dl.row dd {
+            margin-bottom: 0.75rem;
+        }
+    </style>
 }
-</p>

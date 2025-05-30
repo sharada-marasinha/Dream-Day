@@ -209,4 +209,6 @@ public class WeddingController : Controller
 
         return View(wedding); // Pass the fetched wedding entity to Details.cshtml
     }
+    
+
 }

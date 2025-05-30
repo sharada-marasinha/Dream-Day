@@ -1,0 +1,321 @@
+﻿@model DreamDay.Models.ViewModels.WeddingBudgetViewModel
+@{
+    // Title is now set in the controller and passed via ViewData or Model.WeddingTitle
+    ViewData["Title"] = $"Budget for {Model.WeddingTitle ?? "Wedding"}";
+}
+
+@if (!string.IsNullOrEmpty(Model.WeddingTitle))
+{
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            @* This link would need a corresponding WeddingController and Details action if you want it to work.
+           For a pure mock setup, you might remove it or have it point to a mock wedding details page.
+        <li class="breadcrumb-item"><a asp-controller="Wedding" asp-action="Details" asp-route-id="@Model.WeddingId">Wedding: @Model.WeddingTitle</a></li>
+        *@
+            <li class="breadcrumb-item">Wedding: @Model.WeddingTitle</li>
+            <li class="breadcrumb-item active" aria-current="page">Manage Budget</li>
+        </ol>
+    </nav>
+}
+
+<h2>@ViewData["Title"]</h2>
+<hr />
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<form asp-controller="Budget" asp-action="Index" asp-route-weddingId="@Model.WeddingId" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="WeddingId" />
+    @* We are passing WeddingTitle in the ViewModel itself for display in case of validation errors *@
+    <input type="hidden" asp-for="WeddingTitle" />
+
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+            <h4 class="mb-0"><i class="bi bi-calculator-fill me-2"></i>Wedding Budget Management</h4>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4 text-center">
+                <div class="col-md-4">
+                    <div class="p-3 border rounded bg-light">
+                        <h5><label asp-for="TotalAllocatedBudget"></label></h5>
+                        <input asp-for="TotalAllocatedBudget" id="totalAllocatedBudgetInput" class="form-control form-control-lg text-center fs-4 fw-bold mb-2" step="100.00" style="border:none; background:transparent;" />
+                        <span asp-validation-for="TotalAllocatedBudget" class="text-danger d-block"></span>
+                        <span class="text-muted">(Tap to edit, then Save Changes below)</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 border rounded bg-light">
+                        <h5>Total Actual Spent</h5>
+                        <p id="totalActualSpent" class="fs-4 fw-bold text-danger mb-0">0.00</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 border rounded bg-light">
+                        <h5>Remaining Budget</h5>
+                        <p id="remainingBudget" class="fs-4 fw-bold text-success mb-0">0.00</p>
+                    </div>
+                </div>
+            </div>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <hr />
+
+            <h5 class="mt-4 mb-3"><i class="bi bi-list-ul"></i>Budget Breakdown</h5>
+            <div class="table-responsive">
+                <table class="table table-hover table-sm" id="budgetItemsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 15%;"><label asp-for="Items[0].Category"></label></th>
+                            <th style="width: 20%;"><label asp-for="Items[0].ItemName"></label> <span class="text-danger">*</span></th>
+                            <th style="width: 12%;" class="text-end"><label asp-for="Items[0].EstimatedCost"></label> ($)</th>
+                            <th style="width: 12%;" class="text-end"><label asp-for="Items[0].ActualCost"></label> ($)</th>
+                            <th style="width: 12%;" class="text-end"><label asp-for="Items[0].PaidAmount"></label> ($)</th>
+                            <th style="width: 15%;"><label asp-for="Items[0].Vendor"></label></th>
+                            <th style="width: 10%;"><label asp-for="Items[0].Status"></label></th>
+                            <th style="width: 5%;" class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Items.Count; i++)
+                        {
+                            <tr>
+                                <td>
+                                    <input type="hidden" asp-for="Items[i].Id" />
+                                    <input asp-for="Items[i].Category" class="form-control form-control-sm budget-category" placeholder="e.g., Flowers" />
+                                    <span asp-validation-for="Items[i].Category" class="text-danger d-block small"></span>
+                                </td>
+                                <td>
+                                    <input asp-for="Items[i].ItemName" class="form-control form-control-sm budget-item-name" placeholder="Description" />
+                                    <span asp-validation-for="Items[i].ItemName" class="text-danger d-block small"></span>
+                                </td>
+                                <td>
+                                    <input asp-for="Items[i].EstimatedCost" class="form-control form-control-sm text-end budget-estimated" type="number" step="0.01" min="0" />
+                                    <span asp-validation-for="Items[i].EstimatedCost" class="text-danger d-block small"></span>
+                                </td>
+                                <td>
+                                    <input asp-for="Items[i].ActualCost" class="form-control form-control-sm text-end budget-actual" type="number" step="0.01" min="0" />
+                                    <span asp-validation-for="Items[i].ActualCost" class="text-danger d-block small"></span>
+                                </td>
+                                <td>
+                                    <input asp-for="Items[i].PaidAmount" class="form-control form-control-sm text-end budget-paid" type="number" step="0.01" min="0" />
+                                    <span asp-validation-for="Items[i].PaidAmount" class="text-danger d-block small"></span>
+                                </td>
+                                <td>
+                                    <input asp-for="Items[i].Vendor" class="form-control form-control-sm budget-vendor" placeholder="Vendor name" />
+                                    <span asp-validation-for="Items[i].Vendor" class="text-danger d-block small"></span>
+                                </td>
+                                <td>
+                                    <select asp-for="Items[i].Status" class="form-select form-select-sm budget-status">
+                                        <option value="">--Select--</option>
+                                        <option value="Planned">Planned</option>
+                                        <option value="Booked">Booked</option>
+                                        <option value="Pending Payment">Pending Payment</option>
+                                        <option value="Paid">Paid</option>
+                                        <option value="Cancelled">Cancelled</option>
+                                    </select>
+                                    <span asp-validation-for="Items[i].Status" class="text-danger d-block small"></span>
+                                </td>
+                                <td class="text-center align-middle">
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-budget-item" title="Remove Item"><i class="bi bi-trash"></i></button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light fw-bold">
+                            <td colspan="2" class="text-end">Totals:</td>
+                            <td id="totalEstimatedDisplay" class="text-end">0.00</td>
+                            <td id="totalActualDisplay" class="text-end">0.00</td>
+                            <td id="totalPaidDisplay" class="text-end">0.00</td>
+                            <td colspan="3"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <button type="button" class="btn btn-primary mt-3" id="addBudgetItem"><i class="bi bi-plus-circle me-2"></i>Add Budget Item</button>
+            <div class="mt-4 text-end">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary me-2">
+                    @* Or back to wedding list/details *@
+                    <i class="bi bi-arrow-left-circle me-2"></i>Back
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-save me-2"></i>Save Budget Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // JavaScript for dynamic rows and calculations (same as provided in the previous response)
+        // Ensure that `totalAllocatedBudgetInput` uses the correct ID generated by asp-for (`TotalAllocatedBudget`).
+        // Ensure `addRow` function correctly sets up input `name` attributes for list binding: Items[index].PropertyName
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const budgetItemsTableBody = document.getElementById('budgetItemsTable').getElementsByTagName('tbody')[0];
+            const addBudgetItemButton = document.getElementById('addBudgetItem');
+
+            // Corrected ID to match what asp-for generates for TotalAllocatedBudget
+            const totalAllocatedBudgetInput = document.getElementById('TotalAllocatedBudget');
+            const totalActualSpentDisplay = document.getElementById('totalActualSpent');
+            const remainingBudgetDisplay = document.getElementById('remainingBudget');
+
+            const totalEstimatedDisplay = document.getElementById('totalEstimatedDisplay');
+            const totalActualDisplay = document.getElementById('totalActualDisplay');
+            const totalPaidDisplay = document.getElementById('totalPaidDisplay');
+
+            function calculateTotals() {
+                let currentTotalAllocated = 0;
+                if (totalAllocatedBudgetInput && totalAllocatedBudgetInput.value) {
+                    currentTotalAllocated = parseFloat(totalAllocatedBudgetInput.value.toString().replace(/[^0-9.-]+/g, "")) || 0;
+                }
+
+                let currentTotalEstimated = 0;
+                let currentTotalActual = 0;
+                let currentTotalPaid = 0;
+
+                const rows = budgetItemsTableBody.getElementsByTagName('tr');
+                for (let i = 0; i < rows.length; i++) {
+                    const estimatedInput = rows[i].querySelector('.budget-estimated');
+                    const actualInput = rows[i].querySelector('.budget-actual');
+                    const paidInput = rows[i].querySelector('.budget-paid');
+
+                    if (estimatedInput && estimatedInput.value) currentTotalEstimated += parseFloat(estimatedInput.value) || 0;
+                    if (actualInput && actualInput.value) currentTotalActual += parseFloat(actualInput.value) || 0;
+                    if (paidInput && paidInput.value) currentTotalPaid += parseFloat(paidInput.value) || 0;
+                }
+
+                totalEstimatedDisplay.textContent = currentTotalEstimated.toFixed(2);
+                totalActualDisplay.textContent = currentTotalActual.toFixed(2);
+                totalActualSpentDisplay.textContent = currentTotalActual.toFixed(2); // Assuming actual spent is total actual cost
+                totalPaidDisplay.textContent = currentTotalPaid.toFixed(2);
+
+                const remaining = currentTotalAllocated - currentTotalActual;
+                remainingBudgetDisplay.textContent = remaining.toFixed(2);
+                remainingBudgetDisplay.classList.toggle('text-danger', remaining < 0);
+                remainingBudgetDisplay.classList.toggle('text-success', remaining >= 0);
+            }
+
+            function reindexTableRows() {
+                const rows = budgetItemsTableBody.getElementsByTagName('tr');
+                for (let i = 0; i < rows.length; i++) {
+                    const inputs = rows[i].querySelectorAll('input[type="hidden"], input[type="text"], input[type="number"], input[type="date"], select');
+                    inputs.forEach(input => {
+                        if (input.name) {
+                            const oldName = input.name;
+                            const newName = oldName.replace(/Items\[\d+\]/g, `Items[${i}]`);
+                            input.name = newName;
+                            // Update IDs for asp-validation-for spans (more complex, usually server validation handles re-indexed items fine)
+                            const validationSpan = document.querySelector(`span[data-valmsg-for="${oldName}"]`);
+                            if(validationSpan){
+                                validationSpan.setAttribute('data-valmsg-for', newName);
+                            }
+                        }
+                    });
+                }
+            }
+
+            function addRow(item = {}, focusFirstInput = true) {
+                const newIndex = budgetItemsTableBody.rows.length;
+                const newRow = budgetItemsTableBody.insertRow();
+                // Manually construct names for model binding
+                newRow.innerHTML = `
+                    <td>
+                        <input type="hidden" name="Items[${newIndex}].Id" value="${item.Id || 0}" />
+                        <input type="text" name="Items[${newIndex}].Category" class="form-control form-control-sm budget-category" value="${item.Category || 'Uncategorized'}" placeholder="e.g., Flowers" />
+                        <span class="text-danger d-block small" data-valmsg-for="Items[${newIndex}].Category" data-valmsg-replace="true"></span>
+                    </td>
+                    <td>
+                        <input type="text" name="Items[${newIndex}].ItemName" class="form-control form-control-sm budget-item-name" value="${item.ItemName || ''}" placeholder="Description" />
+                        <span class="text-danger d-block small" data-valmsg-for="Items[${newIndex}].ItemName" data-valmsg-replace="true"></span>
+                    </td>
+                    <td>
+                        <input type="number" name="Items[${newIndex}].EstimatedCost" class="form-control form-control-sm text-end budget-estimated" value="${(item.EstimatedCost || 0).toFixed(2)}" step="0.01" min="0" />
+                         <span class="text-danger d-block small" data-valmsg-for="Items[${newIndex}].EstimatedCost" data-valmsg-replace="true"></span>
+                    </td>
+                    <td>
+                        <input type="number" name="Items[${newIndex}].ActualCost" class="form-control form-control-sm text-end budget-actual" value="${(item.ActualCost || 0).toFixed(2)}" step="0.01" min="0" />
+                        <span class="text-danger d-block small" data-valmsg-for="Items[${newIndex}].ActualCost" data-valmsg-replace="true"></span>
+                    </td>
+                    <td>
+                        <input type="number" name="Items[${newIndex}].PaidAmount" class="form-control form-control-sm text-end budget-paid" value="${(item.PaidAmount || 0).toFixed(2)}" step="0.01" min="0" />
+                        <span class="text-danger d-block small" data-valmsg-for="Items[${newIndex}].PaidAmount" data-valmsg-replace="true"></span>
+                    </td>
+                    <td>
+                        <input type="text" name="Items[${newIndex}].Vendor" class="form-control form-control-sm budget-vendor" value="${item.Vendor || ''}" placeholder="Vendor name" />
+                        <span class="text-danger d-block small" data-valmsg-for="Items[${newIndex}].Vendor" data-valmsg-replace="true"></span>
+                    </td>
+                    <td>
+                        <select name="Items[${newIndex}].Status" class="form-select form-select-sm budget-status">
+                            <option value="">--Select--</option>
+                            <option value="Planned" ${item.Status === 'Planned' ? 'selected' : ''}>Planned</option>
+                            <option value="Booked" ${item.Status === 'Booked' ? 'selected' : ''}>Booked</option>
+                            <option value="Pending Payment" ${item.Status === 'Pending Payment' ? 'selected' : ''}>Pending Payment</option>
+                            <option value="Paid" ${item.Status === 'Paid' ? 'selected' : ''}>Paid</option>
+                            <option value="Cancelled" ${item.Status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                        <span class="text-danger d-block small" data-valmsg-for="Items[${newIndex}].Status" data-valmsg-replace="true"></span>
+                    </td>
+                    <td class="text-center align-middle">
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-budget-item" title="Remove Item"><i class="bi bi-trash"></i></button>
+                    </td>
+                `;
+                attachRowEventListeners(newRow);
+                reindexTableRows(); // Re-index after adding
+                calculateTotals();
+                if(focusFirstInput){
+                     newRow.querySelector('.budget-category').focus();
+                }
+            }
+
+            function attachRowEventListeners(row) {
+                row.querySelector('.remove-budget-item').addEventListener('click', function () {
+                    this.closest('tr').remove();
+                    reindexTableRows(); // Re-index after removing
+                    calculateTotals();
+                });
+                const inputsToRecalculate = row.querySelectorAll('.budget-estimated, .budget-actual, .budget-paid');
+                inputsToRecalculate.forEach(input => {
+                    input.addEventListener('input', calculateTotals);
+                    input.addEventListener('change', calculateTotals); // for number input spinners
+                });
+            }
+
+            // Attach listeners to initially rendered rows (if any)
+            const existingRows = budgetItemsTableBody.getElementsByTagName('tr');
+            for (let i = 0; i < existingRows.length; i++) {
+                attachRowEventListeners(existingRows[i]);
+            }
+
+            if (totalAllocatedBudgetInput) {
+                totalAllocatedBudgetInput.addEventListener('input', calculateTotals);
+                totalAllocatedBudgetInput.addEventListener('change', calculateTotals);
+            }
+
+            addBudgetItemButton.addEventListener('click', function () { addRow({}, true); });
+
+            // Initial calculation on page load
+            calculateTotals();
+
+            // If model items list is empty (e.g. @Model.Items.Count is 0) and no rows rendered by Razor, add one client-side
+            if (@(Model.Items.Count) === 0 && budgetItemsTableBody.rows.length === 0) {
+                addRow({}, false); // Don't focus on initial auto-added row
+            }
+        });
+    </script>
+}

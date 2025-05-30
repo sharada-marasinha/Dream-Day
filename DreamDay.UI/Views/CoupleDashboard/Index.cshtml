@@ -1,0 +1,162 @@
+﻿@model DreamDay.Models.ViewModels.CoupleDashboardViewModel
+
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "My Wedding Dashboard"; // Set by controller
+}
+
+<div class="container mt-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @TempData["InfoMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+
+    <div class="card shadow-sm mb-4 overflow-hidden">
+        @if (!string.IsNullOrEmpty(Model.CoverImagePath))
+        {
+            <div style="background-image: url('@Url.Content(Model.CoverImagePath)'); background-size: cover; background-position: center center; height: 250px; filter: blur(3px) brightness(0.7);">
+            </div>
+            <div class="card-img-overlay d-flex flex-column justify-content-center align-items-center text-white" style="background-color: rgba(0,0,0,0.3);">
+                <h1 class="display-4">@Model.WeddingTitle</h1>
+                @if (Model.WeddingDate.HasValue)
+                {
+                    <h3 class="fw-light">@Model.WeddingDate.Value.ToString("dddd, MMMM dd, yyyy")</h3>
+                    if (Model.DaysUntilWedding > 0)
+                    {
+                        <p class="lead badge bg-light text-primary p-2 mt-2">@Model.DaysUntilWedding day(s) to go!</p>
+                    }
+                    else if (Model.DaysUntilWedding == 0)
+                    {
+                        <p class="lead badge bg-warning text-dark p-2 mt-2">It's Today!</p>
+                    }
+                    else
+                    {
+                        <p class="lead badge bg-secondary p-2 mt-2">This date has passed.</p>
+                    }
+                }
+                <p class="mt-2"><i class="bi bi-geo-alt-fill"></i> @(Model.WeddingLocation ?? "Location TBD")</p>
+                <a asp-controller="Wedding" asp-action="Details" asp-route-id="@Model.WeddingId" class="btn btn-outline-light mt-3"><i class="bi bi-eye-fill"></i> View Full Wedding Details</a>
+            </div>
+        }
+        else
+        {
+            <div class="card-header bg-primary text-white text-center py-4">
+                <h1 class="display-5 mb-0">@Model.WeddingTitle</h1>
+            </div>
+            <div class="card-body text-center">
+                @if (Model.WeddingDate.HasValue)
+                {
+                    <h3 class="fw-light">@Model.WeddingDate.Value.ToString("dddd, MMMM dd, yyyy")</h3>
+                    if (Model.DaysUntilWedding > 0)
+                    {
+                        <p class="lead badge bg-info text-dark p-2 mt-2">@Model.DaysUntilWedding day(s) to go!</p>
+                    }
+                    else if (Model.DaysUntilWedding == 0)
+                    {
+                        <p class="lead badge bg-warning text-dark p-2 mt-2">It's Today!</p>
+                    }
+                    else
+                    {
+                        <p class="lead badge bg-secondary p-2 mt-2">This date has passed.</p>
+                    }
+                }
+                <p class="mt-2"><i class="bi bi-geo-alt-fill"></i> @(Model.WeddingLocation ?? "Location TBD")</p>
+                <a asp-controller="Wedding" asp-action="Details" asp-route-id="@Model.WeddingId" class="btn btn-primary mt-3"><i class="bi bi-eye-fill"></i> View Full Wedding Details</a>
+            </div>
+        }
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm lift">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-check2-square text-success me-3" style="font-size: 2.5rem;"></i>
+                        <h4 class="card-title mb-0">Checklist Progress</h4>
+                    </div>
+                    @if (Model.TotalTasks > 0)
+                    {
+                        <p>@Model.CompletedTasks of @Model.TotalTasks tasks completed.</p>
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: @Model.ChecklistProgressPercent.ToString("F0")%;" aria-valuenow="@Model.ChecklistProgressPercent.ToString("F0")" aria-valuemin="0" aria-valuemax="100">
+                                @Model.ChecklistProgressPercent.ToString("F0")%
+                            </div>
+                        </div>
+                        <p class="mb-1">Pending tasks: @Model.PendingTasks</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No tasks added yet.</p>
+                    }
+                    <a asp-controller="Checklist" asp-action="Index" asp-route-weddingId="@Model.WeddingId" class="btn btn-outline-success mt-auto"><i class="bi bi-list-check"></i> Manage Checklist</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm lift">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-piggy-bank-fill text-info me-3" style="font-size: 2.5rem;"></i>
+                        <h4 class="card-title mb-0">Budget Overview</h4>
+                    </div>
+                    <p>Allocated: <strong class="text-primary">@Model.TotalAllocatedBudget.ToString("C")</strong></p>
+                    <p>Spent: <strong class="text-danger">@Model.TotalActualSpent.ToString("C")</strong></p>
+                    @if (Model.IsOverBudget)
+                    {
+                        <p class="fw-bold text-danger">Over Budget by: @(Math.Abs(Model.RemainingBudget).ToString("C"))</p>
+                    }
+                    else
+                    {
+                        <p class="fw-bold @(Model.RemainingBudget >= 0 ? "text-success" : "text-danger")">
+                            Remaining: @Model.RemainingBudget.ToString("C")
+                        </p>
+                    }
+                    <a asp-controller="Budget" asp-action="Index" asp-route-weddingId="@Model.WeddingId" class="btn btn-outline-info mt-auto"><i class="bi bi-calculator"></i> Manage Budget</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm lift">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-people text-warning me-3" style="font-size: 2.5rem;"></i>
+                        <h4 class="card-title mb-0">Guest List</h4>
+                    </div>
+                    <p>Estimated Guests: <strong>@Model.EstimatedGuestCount</strong></p>
+                    @* <p>RSVP'd (Yes): <strong>@(Model.RsvpConfirmedCount)</strong></p> *@
+                    <p class="text-muted small">(Full guest list management coming soon)</p>
+                    <a href="#" class="btn btn-outline-warning mt-auto disabled"><i class="bi bi-person-lines-fill"></i> Manage Guests</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .lift {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+            .lift:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+            }
+
+        .card-img-overlay h1, .card-img-overlay h3, .card-img-overlay p {
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+        }
+    </style>
+}

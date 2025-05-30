@@ -11,5 +11,6 @@ namespace DreamDay.BLL.Services.Interfaces
         Task<Wedding> AddAsync(Wedding wedding); // <<<< CORRECTED: Returns Task<Wedding>
         Task UpdateAsync(Wedding wedding);
         Task DeleteAsync(int id);
+     
     }
 }

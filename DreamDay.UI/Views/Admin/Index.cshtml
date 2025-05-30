@@ -1,0 +1,185 @@
+﻿
+@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">@ViewData["Title"]</h1>
+
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="alert alert-info" role="alert">
+            @TempData["InfoMessage"]
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card text-white bg-primary shadow h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Total Users</div>
+                            <div class="h3 mb-0 font-weight-bold">@(Model?.TotalUsers ?? 0)</div>
+                        </div>
+                        <i class="bi bi-people-fill" style="font-size: 3rem; opacity:0.7;"></i>
+                    </div>
+                </div>
+                <a asp-action="ManageUsers" asp-controller="Admin" class="card-footer text-white clearfix small z-1 text-decoration-none">
+                    <span class="float-left">View Details</span>
+                    <span class="float-right"><i class="bi bi-arrow-right-circle"></i></span>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card text-white bg-success shadow h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Total Weddings</div>
+                            <div class="h3 mb-0 font-weight-bold">@(Model?.TotalWeddings ?? 0)</div>
+                        </div>
+                        <i class="bi bi-hearts" style="font-size: 3rem; opacity:0.7;"></i>
+                    </div>
+                </div>
+                <a asp-action="ManageWeddings" asp-controller="Admin" class="card-footer text-white clearfix small z-1 text-decoration-none">
+                    <span class="float-left">View Details</span>
+                    <span class="float-right"><i class="bi bi-arrow-right-circle"></i></span>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card text-dark bg-warning shadow h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Pending Bookings</div>
+                            <div class="h3 mb-0 font-weight-bold">@(Model?.PendingBookings ?? 0)</div>
+                        </div>
+                        <i class="bi bi-journal-bookmark" style="font-size: 3rem; opacity:0.7;"></i>
+                    </div>
+                </div>
+                <a asp-action="ManageBookings" asp-controller="Admin" class="card-footer text-dark clearfix small z-1 text-decoration-none">
+                    <span class="float-left">View Details</span>
+                    <span class="float-right"><i class="bi bi-arrow-right-circle"></i></span>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card text-white bg-info shadow h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Confirmed Bookings</div>
+                            <div class="h3 mb-0 font-weight-bold">@(Model?.ConfirmedBookings ?? 0)</div>
+                        </div>
+                        <i class="bi bi-journal-check" style="font-size: 3rem; opacity:0.7;"></i>
+                    </div>
+                </div>
+                <a asp-action="ManageBookings" asp-controller="Admin" class="card-footer text-white clearfix small z-1 text-decoration-none">
+                    <span class="float-left">View Details</span>
+                    <span class="float-right"><i class="bi bi-arrow-right-circle"></i></span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="mt-5 mb-3">Management Sections</h3>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <a asp-controller="Users" class="text-decoration-none">
+                <div class="card lift">
+                    <div class="card-body text-center">
+                        <div class="display-4 text-primary"><i class="bi bi-person-gear"></i></div>
+                        <div class="h5">Manage Users</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4 mb-3">
+            <a asp-action="ManageWeddings" asp-controller="Admin" class="text-decoration-none">
+                <div class="card lift">
+                    <div class="card-body text-center">
+                        <div class="display-4 text-success"><i class="bi bi-card-list"></i></div>
+                        <div class="h5">Manage Weddings</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4 mb-3">
+            <a asp-action="ManageBookings" asp-controller="Admin" class="text-decoration-none">
+                <div class="card lift">
+                    <div class="card-body text-center">
+                        <div class="display-4 text-info"><i class="bi bi-calendar2-check"></i></div>
+                        <div class="h5">Manage Bookings</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        @* Add more management links as needed in a similar structure *@
+    </div>
+
+    @* Placeholder for future charts or more detailed stats
+    <div class="row mt-5">
+        <div class="col-lg-7 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Wedding Trends (Placeholder)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area" style="height: 250px; background-color: #f8f9fc; display:flex; align-items:center; justify-content:center;">
+                        <p class="text-muted">Chart will be displayed here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Activity (Placeholder)</h6>
+                </div>
+                <div class="card-body" style="height: 298px; overflow-y:auto;">
+                    <ul class="list-unstyled">
+                        <li class="mb-2 border-bottom pb-2">New user 'john.doe' registered. <small class="text-muted float-end">1 hour ago</small></li>
+                        <li class="mb-2 border-bottom pb-2">Booking for 'Smith Wedding' confirmed. <small class="text-muted float-end">3 hours ago</small></li>
+                        <li class="mb-2">New wedding 'Alice & Bob' created. <small class="text-muted float-end">Yesterday</small></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    *@
+</div>
+
+@section Styles {
+    <style>
+        .card-footer .float-left { /* For older Bootstrap or custom styling */
+            float: left;
+        }
+
+        .card-footer .float-right {
+            float: right;
+        }
+
+        .text-xs {
+            font-size: .7rem;
+        }
+
+        .display-4 {
+            font-size: 2.5rem; /* Adjust icon size if needed */
+        }
+
+        .card.lift {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+            .card.lift:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+            }
+    </style>
+}

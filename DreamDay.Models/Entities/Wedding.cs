@@ -32,5 +32,6 @@ namespace DreamDay.Models.Entities
 
         // Existing navigation
         public ICollection<WeddingTask> Tasks { get; set; }
+     
     }
 }
